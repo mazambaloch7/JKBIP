@@ -11,15 +11,19 @@ import android.widget.TextView;
 
 import com.pakistan.jkcontinuestrackerlibrary.callbacks.BluetoothStateListener;
 import com.pakistan.jkcontinuestrackerlibrary.callbacks.InternetStateListener;
+import com.pakistan.jkcontinuestrackerlibrary.manager.PermissionManager;
 import com.pakistan.jkcontinuestrackerlibrary.receivers.BTSDR;
 import com.pakistan.jkcontinuestrackerlibrary.receivers.ISDR;
 import com.pakistan.jkcontinuestrackerlibrary.utils.ContextUtils;
 
 public class MainActivity extends AppCompatActivity
-        implements BluetoothStateListener, InternetStateListener {
+        implements BluetoothStateListener, InternetStateListener,
+                   PermissionManager.AllPermissionsGrantedListener {
 
     private BTSDR mBluetoothState;
     private ISDR mInternetState;
+    private PermissionManager mPermissionManager;
+
 
     private TextView mBluetooth, mInternet;
 
@@ -40,6 +44,10 @@ public class MainActivity extends AppCompatActivity
     private void initRef() {
         mBluetoothState = new BTSDR(this, this);
         mInternetState = new ISDR(this, this);
+
+        // This will check & ask runtime permissions automatically
+        mPermissionManager = PermissionManager.getInstance(this);
+        mPermissionManager.setListener(this);
     }
 
     @Override
@@ -84,5 +92,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onInternetFailure(String error) {
         mInternet.setText("Internet Failure ERROR: "+error);
+    }
+
+    @Override
+    public void allGranted(boolean granted) {
+        if(!granted) // If permissions not granted
+            mPermissionManager.askPermissions(); // Ask Permissions here
     }
 }
